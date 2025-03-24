@@ -1,0 +1,45 @@
+services:
+
+  # PHP Service
+  php-main-backend:
+    build: './php/'
+    volumes:
+      - ../:/var/www/html/
+
+  # Apache Service
+  apache:
+    build: './apache/'
+    depends_on:
+      - php-main-backend
+    ports:
+      - 80:80
+      - 81:81
+    volumes:
+      - ../:/var/www/html/
+
+  # MariaDB Service
+  maria-db:
+    build: './mysql'
+    volumes:
+      - ~/${COMPOSE_PROJECT_NAME}-mysqldata:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - :80
+    environment:
+      PMA_HOST: maria-db
+    depends_on:
+      - maria-db
+  
+  # React Frontend
+  react-frontend:
+    image: node:latest
+    working_dir: /app
+    command: bash -c "npm install && npm run dev -- --host"
+    ports:
+      - 5173:5173
+    volumes:
+      - ../public/frontend/development:/app
+    depends_on:
+      - php-main-backend

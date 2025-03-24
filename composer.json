@@ -1,0 +1,20 @@
+{
+    "name": "kirari/sports-tournaments",
+    "require": {
+        "pecee/simple-router": "5.4.1.7",
+        "rakibtg/sleekdb": "^2.15",
+        "firebase/php-jwt": "^6.10",
+      "ext-pdo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "modules/",
+            "Robust\\Time\\": "include/Time/",
+            "Robust\\Auth\\": ["include/Auth", "include/Auth/Application/", "include/Auth/Domain", "include/Auth/Infrastructure"],
+            "Robust\\Boilerplate\\": "include/"
+        },
+        "files": [
+            "include/SysSettings.php"
+        ]
+    }
+}
