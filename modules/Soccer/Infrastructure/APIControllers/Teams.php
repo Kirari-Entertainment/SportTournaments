@@ -1,5 +1,7 @@
 <?php namespace App\Soccer\Infrastructure\APIControllers;
 
+use App\Soccer\Application\Teams\AddExistingMember\Manager as AddExistingMemberManager;
+use App\Soccer\Application\Teams\AddUnregisteredMember\Manager as AddUnregisteredMemberManager;
 use App\Soccer\Application\Teams\Register\Manager as RegisterManager;
 use App\Soccer\Application\Teams\List\Manager as ListTeamsManager;
 use App\Soccer\Application\Teams\List\TeamsList;
@@ -27,6 +29,8 @@ class Teams extends DefaultController {
     }
 
     public static function index() : void {
+        
+
         static::executeAsGuest(
             managedUseCase: fn() => (new ListTeamsManager(
                 InfProvider::requestEntity(RecordsBook::class)
@@ -36,5 +40,28 @@ class Teams extends DefaultController {
         );
     }
 
+    public static function addMemberForTournament(string $tournamentId, string $teamId) : void {
+        $request = static::parseJsonInputFromCurrentRequest();
+        $useCase = isset($request['playerId']) ? new AddExistingMemberManager(
+            InfProvider::requestEntity(IdGenerator::class, [ 'type' => 'uuid' ]),
+            InfProvider::requestEntity(RecordsBook::class)
+        ) : new AddUnregisteredMemberManager(
+            InfProvider::requestEntity(IdGenerator::class, [ 'type' => 'uuid' ]),
+            InfProvider::requestEntity(RecordsBook::class)
+        );
 
+        static::executeAuthenticated(
+            managedUseCase: fn() => $useCase->execute(
+                $tournamentId,
+                $teamId,
+                ...$request
+            ),
+
+            resultCodes: [ 'string' => RCODES::Created ],
+
+            authorizedRoles: [
+                Roles::Manager
+            ]
+        );
+    }
 }

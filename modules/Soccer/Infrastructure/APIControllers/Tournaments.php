@@ -1,6 +1,8 @@
 <?php namespace App\Soccer\Infrastructure\APIControllers;
 
 use App\Soccer\Application\Tournaments\Register\Manager as RegisterManager;
+use App\Soccer\Application\Tournaments\List\Manager as ListTournamentsManager;
+use App\Soccer\Application\Tournaments\List\TournamentsList;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Auth\Roles;
 use Robust\Boilerplate\HTTP\API\DefaultController;
@@ -21,6 +23,16 @@ class Tournaments extends DefaultController {
             authorizedRoles: [
                 Roles::Manager
             ]
+        );
+    }
+
+    public function index() {
+        static::executeAsGuest(
+            managedUseCase: fn() => (new ListTournamentsManager(
+                Provider::requestEntity(RecordsBook::class)
+            ))->execute(),
+
+            resultCodes: [ TournamentsList::class => RCODES::OK ]
         );
     }
 }

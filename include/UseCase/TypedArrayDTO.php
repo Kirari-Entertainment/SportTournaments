@@ -1,17 +1,27 @@
 <?php namespace Robust\Boilerplate\UseCase;
 
+/**
+ * @template T
+ */
 class TypedArrayDTO implements \ArrayAccess, \Iterator, \JsonSerializable {
     protected int $position = 0;
+    /** @var array<int|string, T> */
     protected array $list = [];
 
     public function offsetExists($offset): bool {
         return isset($this->list[$offset]);
     }
 
+    /**
+     * @return T
+     */
     public function offsetGet($offset): mixed {
         return $this->list[$offset];
     }
 
+    /**
+     * @param T $value
+     */
     public function offsetSet($offset, $value): void {
         if ($offset) {
             $this->list[$offset] = $value;
@@ -24,10 +34,16 @@ class TypedArrayDTO implements \ArrayAccess, \Iterator, \JsonSerializable {
         unset($this->list[$offset]);
     }
 
+    /**
+     * @return array<int|string, T>
+     */
     public function jsonSerialize(): array {
         return $this->list;
     }
 
+    /**
+     * @return T
+     */
     public function current(): mixed {
         return $this->list[$this->position];
     }

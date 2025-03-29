@@ -1,11 +1,12 @@
-<?php namespace App\Soccer\Application\Teams\AddMember;
+<?php namespace App\Soccer\Application\Teams\AddExistingMember;
 
 use App\Soccer\Domain\Player\TeamMembership;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Boilerplate\IdGenerator;
+use Robust\Boilerplate\UseCase\InteractorWithUtils;
 use Robust\Boilerplate\UseCase\UseCaseException;
 
-class Manager {
+class Manager extends InteractorWithUtils {
     public function __construct(
         private IdGenerator $idGenerator,
         private RecordsBook $recordsBook
@@ -15,16 +16,18 @@ class Manager {
         string $tournamentId,
         string $teamId,
         string $playerId,
-    ) : void {
+    ) : string {
+        static::preventEmptyStringParams($tournamentId, $teamId, $playerId);
+        
         $tournament = $this->recordsBook->findTournament($tournamentId);
         $team = $this->recordsBook->findTeam($teamId);
         $player = $this->recordsBook->findPlayer($playerId);
-
-        $this->preventEmptyParameters($tournamentId, $teamId, $playerId);
+        
         $this->checkIfInscribable($tournament);
+        $teamMembershipId = $this->idGenerator->nextForClass(TeamMembership::class);
 
         $membershipInTournament = new TeamMembership(
-            $this->idGenerator->nextForClass(TeamMembership::class),
+            $teamMembershipId,
             $tournament,
             $player,
             $team
@@ -32,15 +35,7 @@ class Manager {
 
         $this->recordsBook->registerTeamMembership($membershipInTournament);
 
-    }
-
-    private function preventEmptyParameters(string ...$params) {
-        if (in_array('', $params)) {
-            throw new UseCaseException(
-                'Empty parameters',
-                UseCaseException::$INVALID_PARAMETER
-            );
-        }
+        return $teamMembershipId;
     }
 
     private function checkIfInscribable($tournament) {
