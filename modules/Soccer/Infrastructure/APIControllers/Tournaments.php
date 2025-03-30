@@ -1,11 +1,15 @@
 <?php namespace App\Soccer\Infrastructure\APIControllers;
 
+use App\Soccer\Application\Tournaments\ListTeamMemberships\ListTeamMemberships;
+use App\Soccer\Application\Tournaments\ListTeamMemberships\TeamMembersList;
 use App\Soccer\Application\Tournaments\Register\Manager as RegisterManager;
-use App\Soccer\Application\Tournaments\List\Manager as ListTournamentsManager;
+use App\Soccer\Application\Tournaments\List\ListTournaments as ListTournamentsManager;
 use App\Soccer\Application\Tournaments\List\TournamentsList;
 use App\Soccer\Application\Tournaments\ListRegisteredTeams\ListRegisteredTeams;
 use App\Soccer\Application\Tournaments\ListRegisteredTeams\RegisteredTeamsList;
 use App\Soccer\Application\Tournaments\RegisterTeam\RegisterTeam;
+use App\Soccer\Application\Tournaments\RegisterTeamMembership\RegisterTeamMembership;
+use App\Soccer\Application\Tournaments\RegisterTeamMembership\RegisterTeamMembershipOfNewPlayer;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Auth\Roles;
 use Robust\Boilerplate\HTTP\API\DefaultController;
@@ -60,6 +64,41 @@ class Tournaments extends DefaultController {
             ))->execute($tournamentId),
 
             resultCodes: [ RegisteredTeamsList::class => RCODES::OK ]
+        );
+    }
+
+    public static function addTeamMember(string $tournamentId, string $teamId) {
+        $bodyParams = static ::parseJsonInputFromCurrentRequest();
+
+        if (isset($bodyParams['playerId'])) {
+            $useCase = new RegisterTeamMembership(
+                Provider::requestEntity(RecordsBook::class)
+            );
+        } else {
+            $useCase = new RegisterTeamMembershipOfNewPlayer(
+                Provider::requestEntity(IdGenerator::class, ['type' => 'uuid']),
+                Provider::requestEntity(RecordsBook::class)
+            );
+        }
+
+        static::executeAuthenticated(
+            managedUseCase: fn() => $useCase->execute($tournamentId, $teamId, ...$bodyParams),
+
+            resultCodes: [ 'boolean' => RCODES::OK ],
+
+            authorizedRoles: [
+                Roles::Manager
+            ]
+        );
+    }
+
+    public static function listTeamMembers(string $tournamentId, string $teamId) {
+        static::executeAsGuest(
+            managedUseCase: fn() => (new ListTeamMemberships(
+                Provider::requestEntity(RecordsBook::class)
+            ))->execute($tournamentId, $teamId),
+
+            resultCodes: [ TeamMembersList::class => RCODES::OK ]
         );
     }
 }

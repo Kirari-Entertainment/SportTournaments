@@ -1,11 +1,11 @@
 <?php namespace App\Soccer\Application\Teams\AddUnregisteredMember;
 
-use App\Soccer\Application\Players\Register\Manager as RegisterManager;
-use App\Soccer\Application\Teams\AddExistingMember\Manager as AddExistingMemberManager;
+use App\Soccer\Application\Players\Register\RegisterPlayer as RegisterManager;
+use App\Soccer\Application\Teams\AddExistingMember\AddExistingMember as AddExistingMemberManager;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Boilerplate\IdGenerator;
 
-class Manager {
+class AddUnregisteredMember {
     private AddExistingMemberManager $addExistingMemberManager;
 
     public function __construct(

@@ -2,7 +2,7 @@
 
 use App\Soccer\Domain\RecordsBook;
 
-class Manager {
+class ListTeams {
     public function __construct(
         private RecordsBook $RecordsBook
     ) { }

@@ -1,6 +1,6 @@
 <?php namespace Robust\Boilerplate\UseCase;
 
-abstract class InteractorWithUtils {
+readonly abstract class InteractorWithUtils {
     protected static function preventEmptyStringParams(string ...$params) {
         if (array_filter($params, fn($param) => trim($param) === '')) {
             throw new UseCaseException(
@@ -9,4 +9,5 @@ abstract class InteractorWithUtils {
             );
         }
     }
+
 }

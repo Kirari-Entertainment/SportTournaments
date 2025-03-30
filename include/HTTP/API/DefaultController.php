@@ -127,7 +127,7 @@ abstract class DefaultController extends BaseController {
                     details: "
                                 Ocurrió un error inesperado. Si los problemas persisten,
                                 contacte a soporte.
-                            " . $e->getMessage()
+                            " . $e->getMessage() . " " . $e->getFile() . " " . $e->getLine()
                 );
 
             }

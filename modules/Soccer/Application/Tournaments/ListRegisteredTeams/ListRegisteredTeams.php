@@ -2,7 +2,7 @@
 
 use App\Soccer\Domain\RecordsBook;
 
-class ListRegisteredTeams {
+readonly  class ListRegisteredTeams {
     public function __construct(
         private RecordsBook $recordsBook
     ) { }

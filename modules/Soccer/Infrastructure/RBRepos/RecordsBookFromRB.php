@@ -1,14 +1,14 @@
 <?php namespace App\Soccer\Infrastructure\RBRepos;
 
 use App\Soccer\Domain\Player\Player;
-use App\Soccer\Domain\Player\TeamMembership;
 use App\Soccer\Domain\RecordsBook;
 use App\Soccer\Domain\Team\Team;
+use App\Soccer\Domain\Tournament\TeamMembership;
 use App\Soccer\Domain\Tournament\Tournament;
 use DateTime;
-use R;
 use RedBeanPHP\OODBBean;
 use Robust\Boilerplate\Infrastructure\RepositoryFromRB;
+use R;
 
 class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
     protected function initializeEntities(): void {
@@ -95,7 +95,6 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
             tableName: 'rbteammembership',
 
             parseToBean: function(TeamMembership $teamMembership, OODBBean &$bean) : void {
-                $bean->sys_id_ = $teamMembership->getId();
                 $bean->player = static::findBeanBySystemId(
                     Player::class,
                     $teamMembership->getPlayer()->getId()
@@ -112,13 +111,18 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
 
             parseFromBean: function(OODBBean $bean) : TeamMembership {
                 return new TeamMembership(
-                    $bean->sys_id_,
-                    $this->parseFromBeanByEntity[Player::class]($bean->player),
+                    $this->parseFromBeanByEntity[Tournament::class]($bean->tournament),
                     $this->parseFromBeanByEntity[Team::class]($bean->team),
-                    $this->parseFromBeanByEntity[Tournament::class]($bean->tournament)
+                    $this->parseFromBeanByEntity[Player::class]($bean->player),
                 );
             }
         );
+
+        R::aliases([
+            'tournament' => static::$tablesByEntity[Tournament::class],
+            'team' => static::$tablesByEntity[Team::class],
+            'player' => static::$tablesByEntity[Player::class],
+        ]);
     }
 
     #region Team
@@ -163,6 +167,18 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
 
     public function retrieveTeamMembershipsByTournament(string $tournamentId): array {
         $teamMemberships = [];
+
+        $tournamentBean = $this->findBeanBySystemId(Tournament::class, $tournamentId);
+
+        $allTeamMembershipsBeans = R::findAll(
+            self::$tablesByEntity[TeamMembership::class],
+            "tournament_id = ?",
+            [ $tournamentBean?->id ]
+        );
+
+        foreach ($allTeamMembershipsBeans as $teamMembershipBean) {
+            $teamMemberships[] = $this->parseFromBeanByEntity[TeamMembership::class]($teamMembershipBean);
+        }
 
         return $teamMemberships;
     }

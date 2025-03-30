@@ -5,10 +5,10 @@ use App\Soccer\Domain\RecordsBook;
 use Robust\Boilerplate\IdGenerator;
 use Robust\Boilerplate\UseCase\UseCaseException;
 
-class Manager {
+class RegisterTeam {
     public function __construct(
-        private IdGenerator $idGenerator,
-        private RecordsBook $RecordsBook
+        private readonly IdGenerator $idGenerator,
+        private readonly RecordsBook $RecordsBook
     ) { }
 
     public function execute(string $name, ?string $captainId = null) : string {
@@ -16,8 +16,8 @@ class Manager {
 
         if ($captainId && $this->RecordsBook->findPlayer($captainId) === null) {
             throw new UseCaseException(
-                code: UseCaseException::$ENTITY_NOT_FOUND,
-                message: 'Captain ID does not exist'
+                message: 'Captain ID does not exist',
+                code: UseCaseException::$ENTITY_NOT_FOUND
             );
         }
 

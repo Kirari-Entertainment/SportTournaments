@@ -1,9 +1,9 @@
 <?php namespace App\Soccer\Infrastructure\APIControllers;
 
-use App\Soccer\Application\Teams\AddExistingMember\Manager as AddExistingMemberManager;
-use App\Soccer\Application\Teams\AddUnregisteredMember\Manager as AddUnregisteredMemberManager;
-use App\Soccer\Application\Teams\Register\Manager as RegisterManager;
-use App\Soccer\Application\Teams\List\Manager as ListTeamsManager;
+use App\Soccer\Application\Teams\AddExistingMember\AddExistingMember as AddExistingMemberManager;
+use App\Soccer\Application\Teams\AddUnregisteredMember\AddUnregisteredMember as AddUnregisteredMemberManager;
+use App\Soccer\Application\Teams\Register\RegisterTeam as RegisterManager;
+use App\Soccer\Application\Teams\List\ListTeams as ListTeamsManager;
 use App\Soccer\Application\Teams\List\TeamsList;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Auth\Roles;

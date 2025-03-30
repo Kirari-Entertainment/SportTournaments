@@ -14,8 +14,8 @@ class Endpoints {
 
                 SimpleRouter::post('{tournamentId}/teams', 'Tournaments@registerTeam');
                 SimpleRouter::get('{tournamentId}/teams', 'Tournaments@listRegisteredTeams');
-                SimpleRouter::post('{tournamentId}/teams/{teamId}/members', 'Tournament@addTeamMember');
-                SimpleRouter::get('{tournamentId}/teams/{teamId}/members', 'Tournament@listTeamMembers');
+                SimpleRouter::post('{tournamentId}/team/{teamId}/members', 'Tournaments@addTeamMember');
+                SimpleRouter::get('{tournamentId}/team/{teamId}/members', 'Tournaments@listTeamMembers');
             }
         );
 

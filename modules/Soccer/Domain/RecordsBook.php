@@ -1,8 +1,8 @@
 <?php namespace App\Soccer\Domain;
 
-use App\Soccer\Domain\Team\Team;
 use App\Soccer\Domain\Player\Player;
-use App\Soccer\Domain\Player\TeamMembership;
+use App\Soccer\Domain\Team\Team;
+use App\Soccer\Domain\Tournament\TeamMembership;
 use App\Soccer\Domain\Tournament\Tournament;
 
 interface RecordsBook {

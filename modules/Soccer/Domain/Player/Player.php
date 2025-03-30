@@ -10,4 +10,5 @@ class Player {
     public function getId(): string { return $this->id; }
     public function getName(): string { return $this->name; }
     public function getLastName(): string { return $this->lastName; }
+    public function getFullName(): string { return "$this->name $this->lastName"; }
 }

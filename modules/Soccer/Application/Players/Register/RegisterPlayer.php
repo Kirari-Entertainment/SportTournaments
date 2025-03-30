@@ -4,7 +4,7 @@ use App\Soccer\Domain\Player\Player;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Boilerplate\IdGenerator;
 
-class Manager {
+readonly class RegisterPlayer {
     public function __construct(
         private IdGenerator $idGenerator,
         private RecordsBook $recordsBook

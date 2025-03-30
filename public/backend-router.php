@@ -19,6 +19,13 @@ try {
         require_once 'frontend/teams_list.php';
     });
 
+    SimpleRouter::get('/register', function (){
+        require_once 'frontend/register_player.php';
+    });
+    SimpleRouter::post('/register', function (){
+        require_once 'frontend/register_player.php';
+    });
+
     SimpleRouter::start();
 
 

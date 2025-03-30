@@ -3,7 +3,7 @@
 use App\Soccer\Domain\RecordsBook;
 use Robust\Boilerplate\UseCase\InteractorWithUtils;
 
-class Manager extends InteractorWithUtils {
+readonly class ListPlayers extends InteractorWithUtils {
     public function __construct(
         private RecordsBook $recordsBook
     ) {}

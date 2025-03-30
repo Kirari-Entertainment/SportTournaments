@@ -17,4 +17,5 @@ class Team {
 
     public function getId() : string { return $this->id; }
     public function getName() : string { return $this->name; }
+    public function getCaptainId() : ?string { return $this->captainId; }
 }

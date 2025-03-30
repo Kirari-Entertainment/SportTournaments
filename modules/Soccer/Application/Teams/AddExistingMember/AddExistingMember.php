@@ -1,15 +1,15 @@
 <?php namespace App\Soccer\Application\Teams\AddExistingMember;
 
-use App\Soccer\Domain\Player\TeamMembership;
 use App\Soccer\Domain\RecordsBook;
+use App\Soccer\Domain\Tournament\TeamMembership;
 use Robust\Boilerplate\IdGenerator;
 use Robust\Boilerplate\UseCase\InteractorWithUtils;
 use Robust\Boilerplate\UseCase\UseCaseException;
 
-class Manager extends InteractorWithUtils {
+class AddExistingMember extends InteractorWithUtils {
     public function __construct(
-        private IdGenerator $idGenerator,
-        private RecordsBook $recordsBook
+        private readonly IdGenerator $idGenerator,
+        private readonly RecordsBook $recordsBook
     ) {}
 
     public function execute(
@@ -23,7 +23,7 @@ class Manager extends InteractorWithUtils {
         $team = $this->recordsBook->findTeam($teamId);
         $player = $this->recordsBook->findPlayer($playerId);
         
-        $this->checkIfInscribable($tournament);
+        $this->ensureInscribable($tournament);
         $teamMembershipId = $this->idGenerator->nextForClass(TeamMembership::class);
 
         $membershipInTournament = new TeamMembership(
@@ -38,7 +38,7 @@ class Manager extends InteractorWithUtils {
         return $teamMembershipId;
     }
 
-    private function checkIfInscribable($tournament) {
+    private function ensureInscribable($tournament) : void {
         if (!$tournament->isInscribable()) {
             throw new UseCaseException(
                 'Tournament is not inscribable',
