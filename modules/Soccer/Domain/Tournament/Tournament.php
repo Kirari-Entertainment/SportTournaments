@@ -27,6 +27,10 @@ class Tournament {
         if ($this->endDate < $this->startDate) {
             throw new \InvalidArgumentException('End date cannot be before start date');
         }
+
+        if ($this->inscriptionEndDate < $this->inscriptionStartDate) {
+            throw new \InvalidArgumentException('Inscription end date cannot be before inscription start date');
+        }
     }
 
     public function getId() : string { return $this->id; }

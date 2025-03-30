@@ -1,4 +1,4 @@
-<?php
+<?php namespace App;
 
 require_once '/var/www/html/vendor/autoload.php';
 
@@ -10,8 +10,7 @@ if (php_sapi_name() === 'cli') {
     $argv = array_slice($argv, 3);
     $moduleMatched = false;
 
-    \Kirari\Series\CLI::listen();
-    \Kirari\Users\CLI::listen();
+    Soccer\CLI::listen();
 
     if (!$moduleMatched) {
         echo "Unknown module.\n";

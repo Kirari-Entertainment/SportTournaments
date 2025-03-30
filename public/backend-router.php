@@ -15,7 +15,12 @@ try {
 
     App\Soccer\Endpoints::open();
 
+    SimpleRouter::get('/', function() {
+        require_once 'frontend/teams_list.php';
+    });
+
     SimpleRouter::start();
+
 
 } catch (Pecee\SimpleRouter\Exceptions\NotFoundHttpException) {
     http_response_code(404);

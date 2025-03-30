@@ -66,7 +66,7 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                 return new Tournament(
                     $bean->sys_id_,
                     $bean->name,
-                    $bean->descrition,
+                    $bean->description,
                     new DateTime($bean->startDate),
                     new DateTime($bean->endDate),
                     new DateTime($bean->inscriptionStartDate),

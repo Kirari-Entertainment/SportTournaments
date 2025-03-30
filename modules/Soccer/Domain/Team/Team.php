@@ -1,13 +1,11 @@
 <?php namespace App\Soccer\Domain\Team;
 
 class Team {
-    private string $id;
-    private string $name;
-
-    public function __construct(string $id, string $name) {
-        $this->id = $id;
-        $this->name = $name;
-
+    public function __construct(
+        private string $id,
+        private string $name,
+        private ?string $captainId = null
+        ) {
         if (empty($this->id)) {
             throw new \InvalidArgumentException('Id cannot be empty');
         }
