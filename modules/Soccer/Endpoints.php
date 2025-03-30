@@ -12,8 +12,8 @@ class Endpoints {
                 SimpleRouter::post('', 'Tournaments@register');
                 SimpleRouter::get('', 'Tournaments@index');
 
-                SimpleRouter::post('{tournamentId}/teams', 'Tournaments@addTeam');
-                SimpleRouter::get('{tournamentId}/teams', 'Tournaments@listTeams');
+                SimpleRouter::post('{tournamentId}/teams', 'Tournaments@registerTeam');
+                SimpleRouter::get('{tournamentId}/teams', 'Tournaments@listRegisteredTeams');
                 SimpleRouter::post('{tournamentId}/teams/{teamId}/members', 'Tournament@addTeamMember');
                 SimpleRouter::get('{tournamentId}/teams/{teamId}/members', 'Tournament@listTeamMembers');
             }
@@ -31,7 +31,7 @@ class Endpoints {
 
         SimpleRouter::group([
             'namespace' => 'App\Soccer\Infrastructure\APIControllers',
-            'prefix' => '/soccer/players'
+            'prefix' => '/soccer/player'
         ],
             function() {
                 SimpleRouter::post('', 'Players@register');

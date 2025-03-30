@@ -3,6 +3,9 @@
 use App\Soccer\Application\Tournaments\Register\Manager as RegisterManager;
 use App\Soccer\Application\Tournaments\List\Manager as ListTournamentsManager;
 use App\Soccer\Application\Tournaments\List\TournamentsList;
+use App\Soccer\Application\Tournaments\ListRegisteredTeams\ListRegisteredTeams;
+use App\Soccer\Application\Tournaments\ListRegisteredTeams\RegisteredTeamsList;
+use App\Soccer\Application\Tournaments\RegisterTeam\RegisterTeam;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Auth\Roles;
 use Robust\Boilerplate\HTTP\API\DefaultController;
@@ -33,6 +36,30 @@ class Tournaments extends DefaultController {
             ))->execute(),
 
             resultCodes: [ TournamentsList::class => RCODES::OK ]
+        );
+    }
+
+    public function registerTeam(string $tournamentId) {
+        static::executeAuthenticated(
+            managedUseCase: fn() => (new RegisterTeam(
+                Provider::requestEntity(RecordsBook::class)
+            ))->execute($tournamentId, ...static::parseJsonInputFromCurrentRequest()),
+
+            resultCodes: [ 'boolean' => RCODES::OK ],
+
+            authorizedRoles: [
+                Roles::Manager
+            ]
+        );
+    }
+
+    public function ListRegisteredTeams(string $tournamentId) {
+        static::executeAsGuest(
+            managedUseCase: fn() => (new ListRegisteredTeams(
+                Provider::requestEntity(RecordsBook::class)
+            ))->execute($tournamentId),
+
+            resultCodes: [ RegisteredTeamsList::class => RCODES::OK ]
         );
     }
 }

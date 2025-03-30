@@ -60,9 +60,23 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                 $bean->endDate = $tournament->getEndDate()->format('Y-m-d H:i:s');
                 $bean->inscriptionStartDate = $tournament->getInscriptionStartDate()->format('Y-m-d H:i:s');
                 $bean->inscriptonEndDate = $tournament->getInscriptionEndDate()->format('Y-m-d H:i:s');
+
+                foreach ($tournament->getRegisteredTeams() as $team) {
+                    $bean->sharedRbteamList[] = static::findBeanBySystemId(
+                        Team::class,
+                        $team->getId()
+                    );
+                }
             },
 
             parseFromBean: function(OODBBean $bean) : Tournament {
+                $alreadyRegisteredTeams = array_map(
+                    function(OODBBean $teamBean) {
+                        return $this->parseFromBeanByEntity[Team::class]($teamBean);
+                    },
+                    $bean->sharedRbteamList
+                );
+
                 return new Tournament(
                     $bean->sys_id_,
                     $bean->name,
@@ -70,7 +84,8 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                     new DateTime($bean->startDate),
                     new DateTime($bean->endDate),
                     new DateTime($bean->inscriptionStartDate),
-                    new DateTime($bean->inscriptonEndDate)
+                    new DateTime($bean->inscriptonEndDate),
+                    $alreadyRegisteredTeams
                 );
             }
         );

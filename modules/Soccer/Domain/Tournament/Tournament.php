@@ -1,8 +1,11 @@
 <?php namespace App\Soccer\Domain\Tournament;
 
+use App\Soccer\Domain\Team\Team;
 use DateTime;
 
 class Tournament {
+    private array $registeredTeams = [];
+
     public function __construct(
         private string $id,
         private string $name,
@@ -11,6 +14,7 @@ class Tournament {
         private DateTime $endDate,
         private DateTime $inscriptionStartDate,
         private DateTime $inscriptionEndDate,
+        ?array $alreadyRegisteredTeams = null
     ) {
         if (empty($this->id)) {
             throw new \InvalidArgumentException('ID cannot be empty');
@@ -31,6 +35,15 @@ class Tournament {
         if ($this->inscriptionEndDate < $this->inscriptionStartDate) {
             throw new \InvalidArgumentException('Inscription end date cannot be before inscription start date');
         }
+
+        if ($alreadyRegisteredTeams) {
+            foreach ($alreadyRegisteredTeams as $team) {
+                if (!$team instanceof Team) {
+                    throw new \InvalidArgumentException('Registered teams must be of type Team');
+                }
+            }
+            $this->registeredTeams = $alreadyRegisteredTeams;
+        }
     }
 
     public function getId() : string { return $this->id; }
@@ -49,5 +62,17 @@ class Tournament {
     public function isInscribable() : bool {
         $now = new DateTime();
         return $this->inscriptionStartDate <= $now && $now <= $this->inscriptionEndDate;
+    }
+
+    public function registerTeam(Team $team) : void {
+        if ($this->isInscribable()) {
+            $this->registeredTeams[] = $team;
+        } else {
+            throw new \InvalidArgumentException('Tournament is not inscribable');
+        }
+    }
+
+    public function getRegisteredTeams() : array {
+        return $this->registeredTeams;
     }
 }
