@@ -33,6 +33,7 @@ abstract class RepositoryFromRB extends RepositoryFromDB {
     protected static array $tablesByEntity = [];
     protected array $parseToBeanByEntity = [];
     protected array $parseFromBeanByEntity = [];
+    private array $entityCache = [];
 
     /**
      * @param \PDO|null $dbConnection Allows to inject a PDO connection to RedBean.
@@ -67,6 +68,9 @@ abstract class RepositoryFromRB extends RepositoryFromDB {
             $this->parseToBeanByEntity[get_class($entity)]($entity, $entityBean);
             R::store($entityBean);
 
+            $cacheKey = $this->getCacheKey(get_class($entity), $entity->getId());
+            $this->entityCache[$cacheKey] = $entity;
+
         } catch (SQL $e) {
             throw new InfrastructureException(
                 message: "El controlador de RedBean podría requerir mantenimiento. {$e->getMessage()}",
@@ -76,9 +80,20 @@ abstract class RepositoryFromRB extends RepositoryFromDB {
     }
 
     protected function findEntityById(string $entityClass, int|string $id): ?object {
-        $entityBean = static::findBeanBySystemId($entityClass, $id);
+        $cacheKey = $this->getCacheKey($entityClass, $id);
 
-        return $entityBean ? $this->parseFromBeanByEntity[$entityClass]($entityBean) : null;
+        if (isset($this->entityCache[$cacheKey])) {
+            return $this->entityCache[$cacheKey];
+        }
+
+        $entityBean = static::findBeanBySystemId($entityClass, $id);
+        $entity = $entityBean ? $this->parseFromBeanByEntity[$entityClass]($entityBean) : null;
+
+        if ($entity) {
+            $this->entityCache[$cacheKey] = $entity;
+        }
+
+        return $entity;
     }
 
     protected function retrieveAllEntities(string $entityClass) : array {
@@ -86,7 +101,12 @@ abstract class RepositoryFromRB extends RepositoryFromDB {
         $allEntities = [];
 
         foreach ($allEntitiesBeans as $entityBean) {
-            $allEntities[] = $this->parseFromBeanByEntity[$entityClass]($entityBean);
+            $entity = $this->parseFromBeanByEntity[$entityClass]($entityBean);
+            $allEntities[] = $entity;
+
+            // Cache each entity
+            $cacheKey = $this->getCacheKey($entityClass, $entity->getId());
+            $this->entityCache[$cacheKey] = $entity;
         }
 
         return $allEntities;
@@ -99,6 +119,9 @@ abstract class RepositoryFromRB extends RepositoryFromDB {
             if ($entityBean) {
                 $this->parseToBeanByEntity[get_class($entity)]($entity, $entityBean);
                 R::store($entityBean);
+
+                $cacheKey = $this->getCacheKey(get_class($entity), $entity->getId());
+                $this->entityCache[$cacheKey] = $entity;
             }
 
         } catch (SQL $e) {
@@ -111,10 +134,20 @@ abstract class RepositoryFromRB extends RepositoryFromDB {
 
     protected function removeEntity(string $entityClass, int|string $id): void {
         $entityBean = static::findBeanBySystemId($entityClass, $id);
-        if ($entityBean) R::trash($entityBean);
+        if ($entityBean) {
+            R::trash($entityBean);
+
+            $cacheKey = $this->getCacheKey($entityClass, $id);
+            unset($this->entityCache[$cacheKey]);
+        }
+
     }
 
     protected static function findBeanBySystemId(string $entityClass, int|string $id) : ?OODBBean {
         return R::findOne(static::$tablesByEntity[$entityClass], "sys_id_ = ?", [$id]);
+    }
+
+    private function getCacheKey(string $entityClass, int|string $id): string {
+        return "{$entityClass}_{$id}";
     }
 }
