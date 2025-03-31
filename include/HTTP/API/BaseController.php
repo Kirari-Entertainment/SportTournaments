@@ -1,26 +1,28 @@
 <?php namespace Robust\Boilerplate\HTTP\API;
 
+use Robust\Boilerplate\File\File;
+use Robust\Boilerplate\File\Image;
 use Robust\Boilerplate\Infrastructure\Provider as InfProvider;
 use Pecee\SimpleRouter\SimpleRouter;
 use Robust\Auth\Authenticator;
 use Robust\Auth\AuthException;
 use Robust\Auth\CredentialManager;
 use Robust\Auth\Roles;
-use Robust\Boilerplate\File\Image;
 use Robust\Boilerplate\HTTP\RCODES;
 
 abstract class BaseController {
-    public static function renderResponse(JSONResponse|Image $response) : void {
+    public static function renderResponse(JSONResponse|File $response) : void {
         // Retorno de la respuesta
-        if ($response instanceof Image) {
+        if ($response instanceof File) {
             header( 'Content-type: '.$response->getMime() );
-            echo $response->getData();
+            http_response_code( RCODES::OK->value );
 
         } else {
             header( 'Content-type: Application/json' );
             http_response_code( $response->getCode() );
-            echo $response->getData();
         }
+
+        echo $response->getData();
 
     }
 
@@ -38,6 +40,31 @@ abstract class BaseController {
         $inputHandler = SimpleRouter::request()->getInputHandler();
         return $inputHandler->getOriginalFile();
     }
+
+    public static function parseBinaryFileFromCurrentRequest(): ?Image {
+        // Check if content type indicates binary data
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        // Read raw input
+        $rawData = file_get_contents('php://input');
+
+        if (empty($rawData)) {
+            return null;
+        }
+
+        // Create image from binary data
+        if (str_starts_with($contentType, 'image/')) {
+            return new Image(
+                data: $rawData,
+                mime: $contentType
+            );
+        } else {
+            // Determine other child class of File based on content type
+            // Example: return new OtherFileClass(data: $rawData, mime: $contentType);
+            return null; // Placeholder, replace with actual logic
+        }
+    }
+
 
     protected static function checkAuthorization(
         array $authorizedRoles = [Roles::Administrator],

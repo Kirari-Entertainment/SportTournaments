@@ -7,6 +7,7 @@ use App\Soccer\Domain\RecordsBook;
 use Robust\Boilerplate\Infrastructure\Provider;
 
 $records = Provider::requestEntity(RecordsBook::class);
+$profilePictureRegister = Provider::requestEntity(\App\Soccer\Domain\Player\ProfPicRegistry::class);
 
 $tournamentsInteractor = new TournamentsListManager(
     $records
@@ -19,6 +20,7 @@ $teamsInteractor = new TeamsListManager(
 $teamsInTournamentInteractor = new ListRegisteredTeams($records);
 
 $teamsMembershipsInteractor = new \App\Soccer\Application\Tournaments\ListTeamMemberships\ListTeamMemberships($records);
+$profilePicturesInteractor = new \App\Soccer\Application\Players\GetProfilePicture\GetProfilePicture($records, $profilePictureRegister);
 
 $allTournaments = $tournamentsInteractor->execute();
 $allTeams = $teamsInteractor->execute();
@@ -84,6 +86,7 @@ $allTeams = $teamsInteractor->execute();
                                 <tbody>
                                     <?php foreach ($teamsMembershipsInteractor->execute($tournament->id, $team->id) as $player): ?>
                                         <tr>
+                                            <td><img src="data:image/jpeg;base64,<?= $profilePicturesInteractor->execute($player->playerId)?->getBase64() ?>" alt="Player Pic"></td>
                                             <td><?= htmlspecialchars($player->playerName) ?></td>
                                         </tr>
                                     <?php endforeach; ?>

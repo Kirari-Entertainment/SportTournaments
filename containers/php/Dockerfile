@@ -14,3 +14,11 @@ RUN apt clean
 COPY CLIApp.sh /usr/bin/app
 RUN dos2unix /usr/bin/app
 RUN chmod +x /usr/bin/app
+
+# Install dependencies required for GD with full feature support
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-freetype \
+    && docker-php-ext-install -j$(nproc) gd

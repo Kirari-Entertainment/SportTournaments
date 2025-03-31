@@ -1,6 +1,8 @@
 <?php namespace Robust\Boilerplate\Infrastructure;
 
+use App\Soccer\Domain\Player\ProfPicRegistry;
 use App\Soccer\Domain\RecordsBook;
+use App\Soccer\Infrastructure\ImageCatalogs\ProfPicRegistryAtFs;
 use App\Soccer\Infrastructure\RBRepos\RecordsBookFromRB;
 use Robust\Auth\CredentialManager;
 use Robust\Auth\CredentialManagerFromDB;
@@ -27,6 +29,10 @@ define ('providersList', [
 
     RecordsBook::class => function() {
         return RecordsBookFromRB::class;
+    },
+
+    ProfPicRegistry::class => function() {
+        return ProfPicRegistryAtFs::class;
     }
 
 ]);

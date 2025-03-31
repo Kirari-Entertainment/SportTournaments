@@ -1,10 +1,14 @@
 <?php namespace App\Soccer\Infrastructure\APIControllers;
 
+use App\Soccer\Application\Players\AddProfilePicture\AddProfilePicture;
+use App\Soccer\Application\Players\GetProfilePicture\GetProfilePicture;
 use App\Soccer\Application\Players\List\ListPlayers;
 use App\Soccer\Application\Players\List\PlayersList;
 use App\Soccer\Application\Players\Register\RegisterPlayer;
+use App\Soccer\Domain\Player\ProfPicRegistry;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Auth\Roles;
+use Robust\Boilerplate\File\Image;
 use Robust\Boilerplate\HTTP\API\DefaultController;
 use Robust\Boilerplate\HTTP\RCODES;
 use Robust\Boilerplate\IdGenerator;
@@ -33,5 +37,33 @@ class Players extends DefaultController {
             authorizedRoles: [ Roles::Manager ]
         );
 
+    }
+
+    public static function showProfPic(string $playerId) {
+        static::executeAsGuest(
+            managedUseCase: fn() => (new GetProfilePicture(
+                Provider::requestEntity(RecordsBook::class),
+                Provider::requestEntity(ProfPicRegistry::class)
+            ))->execute($playerId),
+
+            resultCodes: [
+                Image::class => RCODES::OK,
+                'NULL' => RCODES::NoContent
+            ]
+        );
+    }
+
+    public static function setProfPic(string $playerId) {
+        static::executeAuthenticated(
+            managedUseCase: fn() => (new AddProfilePicture(
+                Provider::requestEntity(RecordsBook::class),
+                Provider::requestEntity(ProfPicRegistry::class)
+            ))->execute(
+                $playerId,
+                static::parseBinaryFileFromCurrentRequest()
+            ),
+
+            resultCodes: [ 'boolean' => RCODES::OK ]
+        );
     }
 }

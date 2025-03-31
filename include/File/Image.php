@@ -1,19 +1,6 @@
 <?php namespace Robust\Boilerplate\File;
 
-class Image {
-    public function __construct(
-        private string $data,
-        private string $mime
-    ) {}
-
-    public function getData() : string {
-        return $this->data;
-    }
-
-    public function getMime() : string {
-        return $this->mime;
-    }
-
+class Image extends File {
     public static function fromFS(string $path) : self {
         $data = file_get_contents($path);
         $mime = mime_content_type($path);
@@ -26,5 +13,9 @@ class Image {
         $mime = mime_content_type($base64);
 
         return new self($data, $mime);
+    }
+
+    public function getBase64() : string {
+        return base64_encode($this->getData());
     }
 }

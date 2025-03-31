@@ -1,6 +1,7 @@
 <?php namespace Robust\Boilerplate\HTTP\API;
 
 use Robust\Auth\AuthException;
+use Robust\Boilerplate\File\File;
 use Robust\Boilerplate\HTTP\RCODES;
 use Robust\Boilerplate\Infrastructure\InfrastructureException;
 use Robust\Boilerplate\UseCase\UseCaseException;
@@ -60,9 +61,17 @@ abstract class DefaultController extends BaseController {
             );
 
             $result = $managedUseCase();
+
             $resultEvaluation = gettype($result) == 'object' ? get_class($result) : gettype($result);
-            $response->setCode($resultCodes[$resultEvaluation]);
-            $response->setData($result);
+
+            if ($result instanceof File) {
+                $response = $result;
+
+            } else {
+                $response->setCode($resultCodes[$resultEvaluation]);
+                $response->setData($result);
+
+            }
 
         } catch (AuthException $e) {
             match($e->getCode()) {
@@ -111,7 +120,7 @@ abstract class DefaultController extends BaseController {
         } catch (\TypeError $e) {
             $response->setCode(
                 RCODES::BadRequest,
-                details: "Los argumentos no son del tipo esperado."
+                details: "Los argumentos no son del tipo esperado: ".$e->getMessage()
             );
 
         } catch(\Error $e) {

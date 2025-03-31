@@ -36,6 +36,9 @@ class Endpoints {
             function() {
                 SimpleRouter::post('', 'Players@register');
                 SimpleRouter::get('', 'Players@index');
+                SimpleRouter::get('{playerId}', 'Players@show');
+                SimpleRouter::get('{playerId}/picture', 'Players@showProfPic');
+                SimpleRouter::post('{playerId}/picture', 'Players@setProfPic');
             }
         );
     }
