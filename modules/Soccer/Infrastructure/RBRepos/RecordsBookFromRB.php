@@ -204,28 +204,28 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
     #region Team
     public function registerTeam(Team $team): void { $this->saveEntity($team); }
     public function retrieveAllTeams() : array { return $this->retrieveAllEntities(Team::class); }
-    public function findTeam(string $id): Team { return $this->findEntityById(Team::class, $id); }
+    public function findTeam(string $id): ?Team { return $this->findEntityById(Team::class, $id); }
     public function updateTeam(Team $team): void { $this->updateEntity($team); }
     public function deleteTeam(string $id): void { $this->removeEntity(Team::class, $id); }
 
     #region Player
     public function registerPlayer(Player $player) : void { $this->saveEntity($player); }
     public function retrieveAllPlayers() : array {return $this->retrieveAllEntities(Player::class); }
-    public function findPlayer(string $id): Player { return $this->findEntityById(Player::class, $id); }
+    public function findPlayer(string $id): ?Player { return $this->findEntityById(Player::class, $id); }
     public function updatePlayer(Player $player): void { $this->updateEntity($player); }
     public function deletePlayer(string $id): void { $this->removeEntity(Player::class, $id); }
 
     #region Tournament
     public function registerTournament(Tournament $tournament): void { $this->saveEntity($tournament); }
     public function retrieveAllTournaments() : array { return $this->retrieveAllEntities(Tournament::class); }
-    public function findTournament(string $id): Tournament { return $this->findEntityById(Tournament::class, $id); }
+    public function findTournament(string $id): ?Tournament { return $this->findEntityById(Tournament::class, $id); }
     public function updateTournament(Tournament $tournament): void { $this->updateEntity($tournament); }
     public function deleteTournament(string $id): void { $this->removeEntity(Tournament::class, $id); }
 
     #region TeamMembership
     public function registerTeamMembership(TeamMembership $teamMembership): void { $this->saveEntity($teamMembership); }
     public function retrieveAllTeamMemberships() : array { return $this->retrieveAllEntities(TeamMembership::class); }
-    public function findTeamMembership(string $id): TeamMembership { return $this->findEntityById(TeamMembership::class, $id); }
+    public function findTeamMembership(string $id): ?TeamMembership { return $this->findEntityById(TeamMembership::class, $id); }
     public function updateTeamMembership(TeamMembership $teamMembership): void { $this->updateEntity($teamMembership); }
     public function deleteTeamMembership(string $id): void { $this->removeEntity(TeamMembership::class, $id); }
 
@@ -262,7 +262,7 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
     #region Game
     public function registerGame(Game $game): void { $this->saveEntity($game); }
     public function retrieveAllGames() : array { return $this->retrieveAllEntities(Game::class); }
-    public function findGame(string $id): Game { return $this->findEntityById(Game::class, $id); }
+    public function findGame(string $id): ?Game { return $this->findEntityById(Game::class, $id); }
     public function updateGame(Game $game): void { $this->updateEntity($game); }
     public function deleteGame(string $id): void { $this->removeEntity(Game::class, $id); }
 
