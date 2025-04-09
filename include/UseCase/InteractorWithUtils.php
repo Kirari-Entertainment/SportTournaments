@@ -10,4 +10,10 @@ readonly abstract class InteractorWithUtils {
         }
     }
 
+    protected static function throwEntityNotFound(string $entityName) {
+        throw new UseCaseException(
+            "$entityName not found",
+            UseCaseException::$ENTITY_NOT_FOUND
+        );
+    }
 }
