@@ -7,9 +7,12 @@ use App\Soccer\Application\Tournaments\List\ListTournaments as ListTournamentsMa
 use App\Soccer\Application\Tournaments\List\TournamentsList;
 use App\Soccer\Application\Tournaments\ListRegisteredTeams\ListRegisteredTeams;
 use App\Soccer\Application\Tournaments\ListRegisteredTeams\RegisteredTeamsList;
+use App\Soccer\Application\Tournaments\ListScheduledGames\ListScheduledGames;
+use App\Soccer\Application\Tournaments\ListScheduledGames\GamesList;
 use App\Soccer\Application\Tournaments\RegisterTeam\RegisterTeam;
 use App\Soccer\Application\Tournaments\RegisterTeamMembership\RegisterTeamMembership;
 use App\Soccer\Application\Tournaments\RegisterTeamMembership\RegisterTeamMembershipOfNewPlayer;
+use App\Soccer\Application\Tournaments\ScheduleGame\ScheduleGame;
 use App\Soccer\Domain\RecordsBook;
 use Robust\Auth\Roles;
 use Robust\Boilerplate\HTTP\API\DefaultController;
@@ -99,6 +102,31 @@ class Tournaments extends DefaultController {
             ))->execute($tournamentId, $teamId),
 
             resultCodes: [ TeamMembersList::class => RCODES::OK ]
+        );
+    }
+
+    public static function scheduleGame(string $tournamentId) {
+        static::executeAuthenticated(
+            managedUseCase: fn() => (new ScheduleGame(
+                Provider::requestEntity(IdGenerator::class, ['type' => 'uuid']),
+                Provider::requestEntity(RecordsBook::class)
+            ))->execute($tournamentId, ...static::parseJsonInputFromCurrentRequest()),
+
+            resultCodes: [ 'string' => RCODES::Created ],
+
+            authorizedRoles: [
+                Roles::Manager
+            ]
+        );
+    }
+
+    public static function listGames(string $tournamentId) {
+        static::executeAsGuest(
+            managedUseCase: fn() => (new ListScheduledGames(
+                Provider::requestEntity(RecordsBook::class)
+            ))->execute($tournamentId),
+
+            resultCodes: [ GamesList::class => RCODES::OK ]
         );
     }
 }

@@ -1,5 +1,7 @@
 <?php namespace App\Soccer\Infrastructure\RBRepos;
 
+use App\Soccer\Domain\Game\Game;
+use App\Soccer\Domain\Game\GameStatus;
 use App\Soccer\Domain\Player\Player;
 use App\Soccer\Domain\RecordsBook;
 use App\Soccer\Domain\Team\Team;
@@ -22,6 +24,7 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
             },
 
             parseFromBean: function(OODBBean $bean) : Team {
+                if (empty($bean->sys_id_)) print_r($bean);
                 return new Team(
                     $bean->sys_id_,
                     $bean->name
@@ -118,10 +121,83 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
             }
         );
 
+        $this->registerEntity(
+            entityClass: Game::class,
+            tableName: 'rbgame',
+
+            parseToBean: function(Game $game, OODBBean &$bean) : void {
+                $bean->sys_id_ = $game->getId();
+                $bean->scheduledFor = $game->getScheduledFor()->format('Y-m-d H:i:s');
+                
+                $bean->tournament = static::findBeanBySystemId(
+                    Tournament::class,
+                    $game->getTournament()->getId()
+                );
+
+                $bean->teamA = static::findBeanBySystemId(
+                    Team::class,
+                    $game->getTeamA()->getId()
+                );
+                
+                $bean->teamB = static::findBeanBySystemId(
+                    Team::class,
+                    $game->getTeamB()->getId()
+                );
+                
+                $bean->status = $game->getStatus()->value;
+
+                $bean->teamAGoals = json_encode($game->getTeamAGoals());
+                $bean->teamBGoals = json_encode($game->getTeamBGoals());
+            },
+
+            parseFromBean: function(OODBBean $bean) : Game {
+                $tournament = $this->parseFromBeanByEntity[Tournament::class]($bean->tournament);
+                $teamA = $this->parseFromBeanByEntity[Team::class]($bean->teamA);
+                $teamB = $this->parseFromBeanByEntity[Team::class]($bean->teamB);
+
+                $teamAGoals = [];
+                if (!empty($bean->team_a_goals)) {
+                    $goalsData = json_decode($bean->team_a_goals, true);
+                    foreach ($goalsData as $goalData) {
+                        $player = $this->findPlayer($goalData['playerId']);
+                        $teamAGoals[] = new \App\Soccer\Domain\Game\Goal(
+                            $player,
+                            new \DateTime($goalData['timestamp'])
+                        );
+                    }
+                }
+                
+                $teamBGoals = [];
+                if (!empty($bean->team_b_goals)) {
+                    $goalsData = json_decode($bean->team_b_goals, true);
+                    foreach ($goalsData as $goalData) {
+                        $player = $this->findPlayer($goalData['playerId']);
+                        $teamBGoals[] = new \App\Soccer\Domain\Game\Goal(
+                            $player,
+                            new \DateTime($goalData['timestamp'])
+                        );
+                    }
+                }
+
+                return Game::createFromHistoricalData(
+                    $bean->sys_id_,
+                    $tournament,
+                    new DateTime($bean->scheduledFor),
+                    $teamA,
+                    $teamB,
+                    GameStatus::from($bean->status),
+                    $teamAGoals,
+                    $teamBGoals
+                );
+            }
+        );
+
         R::aliases([
             'tournament' => static::$tablesByEntity[Tournament::class],
             'team' => static::$tablesByEntity[Team::class],
             'player' => static::$tablesByEntity[Player::class],
+            'team_a' => static::$tablesByEntity[Team::class],
+            'team_b' => static::$tablesByEntity[Team::class],
         ]);
     }
 
@@ -182,4 +258,33 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
 
         return $teamMemberships;
     }
+
+    #region Game
+    public function registerGame(Game $game): void { $this->saveEntity($game); }
+    public function retrieveAllGames() : array { return $this->retrieveAllEntities(Game::class); }
+    public function findGame(string $id): Game { return $this->findEntityById(Game::class, $id); }
+    public function updateGame(Game $game): void { $this->updateEntity($game); }
+    public function deleteGame(string $id): void { $this->removeEntity(Game::class, $id); }
+
+    // Implement the method
+    public function retrieveGamesByTournamentAndStatus(string $tournamentId, GameStatus $status): array {
+        $games = [];
+        
+        $tournamentBean = $this->findBeanBySystemId(Tournament::class, $tournamentId);
+        
+        if ($tournamentBean) {
+            $gamesBeans = R::find(
+                self::$tablesByEntity[Game::class],
+                "tournament_id = ? AND status = ?",
+                [$tournamentBean->id, $status->value]
+            );
+            
+            foreach ($gamesBeans as $gameBean) {
+                $games[] = $this->parseFromBeanByEntity[Game::class]($gameBean);
+            }
+        }
+        
+        return $games;
+    }
+
 }

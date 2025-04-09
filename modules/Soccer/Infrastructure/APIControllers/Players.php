@@ -54,7 +54,7 @@ class Players extends DefaultController {
     }
 
     public static function setProfPic(string $playerId) {
-        static::executeAuthenticated(
+        static::executeAsGuest(
             managedUseCase: fn() => (new AddProfilePicture(
                 Provider::requestEntity(RecordsBook::class),
                 Provider::requestEntity(ProfPicRegistry::class)

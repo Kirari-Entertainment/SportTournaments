@@ -1,5 +1,7 @@
 <?php namespace App\Soccer\Domain;
 
+use App\Soccer\Domain\Game\Game;
+use App\Soccer\Domain\Game\GameStatus;
 use App\Soccer\Domain\Player\Player;
 use App\Soccer\Domain\Team\Team;
 use App\Soccer\Domain\Tournament\TeamMembership;
@@ -32,4 +34,11 @@ interface RecordsBook {
     public function retrieveTeamMembershipsByPlayer(string $playerId) : array;
     public function retrieveTeamMembershipsByTeam(string $teamId) : array;
     public function retrieveTeamMembershipsByTournament(string $tournamentId) : array;
+
+    public function registerGame(Game $game) : void;
+    public function retrieveAllGames() : array;
+    public function findGame(string $id) : ?Game;
+    public function updateGame(Game $game) : void;
+    public function deleteGame(string $id) : void;
+    public function retrieveGamesByTournamentAndStatus(string $tournamentId, GameStatus $status): array;
 }
