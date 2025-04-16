@@ -16,4 +16,11 @@ readonly abstract class InteractorWithUtils {
             UseCaseException::$ENTITY_NOT_FOUND
         );
     }
+
+    protected static function throwInvalidParameter(string $message) {
+        throw new UseCaseException(
+            $message,
+            UseCaseException::$INVALID_PARAMETER
+        );
+    }
 }

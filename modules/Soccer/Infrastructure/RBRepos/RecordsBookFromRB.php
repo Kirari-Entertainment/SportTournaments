@@ -2,6 +2,7 @@
 
 use App\Soccer\Domain\Game\Game;
 use App\Soccer\Domain\Game\GameStatus;
+use App\Soccer\Domain\Game\Goal;
 use App\Soccer\Domain\Player\Player;
 use App\Soccer\Domain\RecordsBook;
 use App\Soccer\Domain\Team\Team;
@@ -146,8 +147,22 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                 
                 $bean->status = $game->getStatus()->value;
 
-                $bean->teamAGoals = json_encode($game->getTeamAGoals());
-                $bean->teamBGoals = json_encode($game->getTeamBGoals());
+                $teamAGoalsData = [];
+                foreach ($game->getTeamAGoals() as $goal) {
+                    $teamAGoalsData[] = [
+                        'playerId' => $goal->getPlayer()->getId(),
+                        'timestamp' => $goal->getScoredAt()->format('Y-m-d H:i:s')
+                    ];
+                }
+                $teamBGoalsData = [];
+                foreach ($game->getTeamBGoals() as $goal) {
+                    $teamBGoalsData[] = [
+                        'playerId' => $goal->getPlayer()->getId(),
+                        'timestamp' => $goal->getScoredAt()->format('Y-m-d H:i:s')
+                    ];
+                }
+                $bean->teamAGoals = json_encode($teamAGoalsData);
+                $bean->teamBGoals = json_encode($teamBGoalsData);
             },
 
             parseFromBean: function(OODBBean $bean) : Game {
@@ -156,11 +171,11 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                 $teamB = $this->parseFromBeanByEntity[Team::class]($bean->teamB);
 
                 $teamAGoals = [];
-                if (!empty($bean->team_a_goals)) {
-                    $goalsData = json_decode($bean->team_a_goals, true);
+                if (!empty($bean->teamAGoals)) {
+                    $goalsData = json_decode($bean->teamAGoals, true);
                     foreach ($goalsData as $goalData) {
                         $player = $this->findPlayer($goalData['playerId']);
-                        $teamAGoals[] = new \App\Soccer\Domain\Game\Goal(
+                        $teamAGoals[] = new Goal(
                             $player,
                             new \DateTime($goalData['timestamp'])
                         );
@@ -172,7 +187,7 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                     $goalsData = json_decode($bean->team_b_goals, true);
                     foreach ($goalsData as $goalData) {
                         $player = $this->findPlayer($goalData['playerId']);
-                        $teamBGoals[] = new \App\Soccer\Domain\Game\Goal(
+                        $teamBGoals[] = new Goal(
                             $player,
                             new \DateTime($goalData['timestamp'])
                         );

@@ -7,4 +7,7 @@ class Goal {
         private ?Player $player,
         private ?\DateTime $scoredAt,
     ) { }
+
+    public function getPlayer(): ?Player { return $this->player; }
+    public function getScoredAt(): ?\DateTime { return $this->scoredAt; }
 }

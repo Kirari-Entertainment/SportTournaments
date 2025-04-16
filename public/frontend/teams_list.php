@@ -81,7 +81,7 @@ $allTeams = $teamsInteractor->execute();
                         <?php foreach ($teamsInTournamentInteractor->execute($tournament->id) as $team): ?>
                             <table>
                                 <thead>
-                                    <tr><th><?= htmlspecialchars($team->name) ?></th></tr>
+                                    <tr><th colspan="2"><?= htmlspecialchars($team->name) ?></th></tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($teamsMembershipsInteractor->execute($tournament->id, $team->id) as $player): ?>

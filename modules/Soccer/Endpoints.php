@@ -24,6 +24,18 @@ class Endpoints {
 
         SimpleRouter::group([
             'namespace' => 'App\Soccer\Infrastructure\APIControllers',
+            'prefix' => '/soccer/game'
+        ],
+
+            function() {
+                SimpleRouter::get('{gameId}', 'Games@status');
+                SimpleRouter::post('{gameId}/start', 'Games@start');
+                SimpleRouter::post('{gameId}/goals', 'Games@annotateGoal');
+            }
+        );
+
+        SimpleRouter::group([
+            'namespace' => 'App\Soccer\Infrastructure\APIControllers',
             'prefix' => '/soccer/team'
         ],
             function() {

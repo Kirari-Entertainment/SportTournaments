@@ -28,6 +28,8 @@ readonly class ListScheduledGames extends InteractorWithUtils {
                 $game->getId(),
                 $game->getScheduledFor()->format('Y-m-d H:i:s'),
                 "{$game->getTeamA()->getName()} vs {$game->getTeamB()->getName()}",
+                $game->getTeamA()->getId(),
+                $game->getTeamB()->getId()
             );
         }
 

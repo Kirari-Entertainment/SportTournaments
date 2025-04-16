@@ -6,7 +6,7 @@ use DateTime;
 use Robust\Boilerplate\IdGenerator;
 use Robust\Boilerplate\UseCase\InteractorWithUtils;
 
-class Manager extends InteractorWithUtils {
+readonly class Manager extends InteractorWithUtils {
     public function __construct(
         private IdGenerator $idGenerator,
         private RecordsBook $recordsBook
