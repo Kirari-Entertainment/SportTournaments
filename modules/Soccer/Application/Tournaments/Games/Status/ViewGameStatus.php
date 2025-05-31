@@ -17,6 +17,18 @@ readonly class ViewGameStatus extends InteractorWithUtils {
 
         $game = $this->recordsBook->findGame($gameId) ?? static::throwEntityNotFound('Game');
 
+        $allGoals = $this->recordsBook->retrieveAllGoalsByGame($gameId);
+
+        $teamAGoals = 0;
+        $teamBGoals = 0;
+
+        foreach ($allGoals as $goal) {
+            if ($goal->getTeamId() === $game->getTeamA()->getId())
+                ++$teamAGoals;
+            elseif ($goal->getTeamId() === $game->getTeamB()->getId())
+                ++$teamBGoals;
+        }
+
         return new GameStatus(
             $game->getId(),
             $game->getScheduledFor()->format('Y-m-d H:i:s'),
@@ -26,8 +38,8 @@ readonly class ViewGameStatus extends InteractorWithUtils {
             $game->getTeamB()->getId(),
             $game->getTeamA()->getName(),
             $game->getTeamB()->getName(),
-            $game->getScoreTeamA(),
-            $game->getScoreTeamB()
+            $teamAGoals,
+            $teamBGoals
         );
     }
 }

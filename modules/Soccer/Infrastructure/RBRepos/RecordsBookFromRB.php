@@ -146,23 +146,6 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                 );
                 
                 $bean->status = $game->getStatus()->value;
-
-                $teamAGoalsData = [];
-                foreach ($game->getTeamAGoals() as $goal) {
-                    $teamAGoalsData[] = [
-                        'playerId' => $goal->getPlayer()->getId(),
-                        'timestamp' => $goal->getScoredAt()->format('Y-m-d H:i:s')
-                    ];
-                }
-                $teamBGoalsData = [];
-                foreach ($game->getTeamBGoals() as $goal) {
-                    $teamBGoalsData[] = [
-                        'playerId' => $goal->getPlayer()->getId(),
-                        'timestamp' => $goal->getScoredAt()->format('Y-m-d H:i:s')
-                    ];
-                }
-                $bean->teamAGoals = json_encode($teamAGoalsData);
-                $bean->teamBGoals = json_encode($teamBGoalsData);
             },
 
             parseFromBean: function(OODBBean $bean) : Game {
@@ -170,39 +153,50 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
                 $teamA = $this->parseFromBeanByEntity[Team::class]($bean->teamA);
                 $teamB = $this->parseFromBeanByEntity[Team::class]($bean->teamB);
 
-                $teamAGoals = [];
-                if (!empty($bean->teamAGoals)) {
-                    $goalsData = json_decode($bean->teamAGoals, true);
-                    foreach ($goalsData as $goalData) {
-                        $player = $this->findPlayer($goalData['playerId']);
-                        $teamAGoals[] = new Goal(
-                            $player,
-                            new \DateTime($goalData['timestamp'])
-                        );
-                    }
-                }
-                
-                $teamBGoals = [];
-                if (!empty($bean->team_b_goals)) {
-                    $goalsData = json_decode($bean->team_b_goals, true);
-                    foreach ($goalsData as $goalData) {
-                        $player = $this->findPlayer($goalData['playerId']);
-                        $teamBGoals[] = new Goal(
-                            $player,
-                            new \DateTime($goalData['timestamp'])
-                        );
-                    }
-                }
-
-                return Game::createFromHistoricalData(
+                $game = new Game(
                     $bean->sys_id_,
                     $tournament,
                     new DateTime($bean->scheduledFor),
                     $teamA,
-                    $teamB,
-                    GameStatus::from($bean->status),
-                    $teamAGoals,
-                    $teamBGoals
+                    $teamB
+                );
+
+                if ($bean->status == GameStatus::IN_PROGRESS->value) {
+                    $game->startGame();
+                } elseif ($bean->status == GameStatus::FINISHED->value) {
+                    $game->finishGame();
+                }
+
+                return $game;
+            }
+        );
+
+        $this->registerEntity(
+            entityClass: Goal::class,
+            tableName: 'rbgoal',
+
+            parseToBean: function(Goal $goal, OODBBean &$bean) : void {
+                $bean->game = static::findBeanBySystemId(
+                    Game::class,
+                    $goal->getGameId()
+                );
+                $bean->player = static::findBeanBySystemId(
+                    Player::class,
+                    $goal->getPlayerId()
+                );
+                $bean->team = static::findBeanBySystemId(
+                    Team::class,
+                    $goal->getTeamId()
+                );
+                $bean->scoredAt = $goal->getScoredAt()->format('Y-m-d H:i:s');
+            },
+
+            parseFromBean: function(OODBBean $bean) : Goal {
+                return new Goal(
+                    $bean->game->sys_id_,
+                    $bean->team->sys_id_,
+                    $bean->player?->sys_id_,
+                    new DateTime($bean->scoredAt)
                 );
             }
         );
@@ -213,6 +207,7 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
             'player' => static::$tablesByEntity[Player::class],
             'team_a' => static::$tablesByEntity[Team::class],
             'team_b' => static::$tablesByEntity[Team::class],
+            'game' => static::$tablesByEntity[Game::class],
         ]);
     }
 
@@ -280,8 +275,6 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
     public function findGame(string $id): ?Game { return $this->findEntityById(Game::class, $id); }
     public function updateGame(Game $game): void { $this->updateEntity($game); }
     public function deleteGame(string $id): void { $this->removeEntity(Game::class, $id); }
-
-    // Implement the method
     public function retrieveGamesByTournamentAndStatus(string $tournamentId, GameStatus $status): array {
         $games = [];
         
@@ -302,4 +295,57 @@ class RecordsBookFromRB extends RepositoryFromRB implements RecordsBook {
         return $games;
     }
 
+    #region Goal
+    public function annotateGoal(Goal $goal): void { $this->saveEntity($goal); }
+    public function retrieveAllGoals() : array { return $this->retrieveAllEntities(Goal::class); }
+    
+    public function retrieveAllGoalsByGame(string $gameId) {
+        $goals = [];
+
+        $gameBean = $this->findBeanBySystemId(Game::class, $gameId);
+
+        $allGoalsBeans = R::findAll(
+            self::$tablesByEntity[Goal::class],
+            "game_id = ?",
+            [ $gameBean?->id ]
+        );
+
+        foreach ($allGoalsBeans as $goalBean) {
+            $goals[] = $this->parseFromBeanByEntity[Goal::class]($goalBean);
+        }
+
+        return $goals;
+    }
+
+    public function retrieveAllGoalsByPlayer(string $playerId) {
+        $goals = [];
+
+        $playerBean = $this->findBeanBySystemId(Player::class, $playerId);
+
+        $allGoalsBeans = R::findAll(
+            self::$tablesByEntity[Goal::class],
+            "player_id = ?",
+            [ $playerBean?->id ]
+        );
+
+        foreach ($allGoalsBeans as $goalBean) {
+            $goals[] = $this->parseFromBeanByEntity[Goal::class]($goalBean);
+        }
+
+        return $goals;
+    }
+
+    public function retrieveAllGoalsInTournament(string $tournamentId) {
+        $goals = [];
+
+        $gamesInTournamentBeans = R::findAll(
+            self::$tablesByEntity[Game::class],
+            'tournament_id = ?',
+            [ $tournamentId ]
+        );
+
+        foreach ($gamesInTournamentBeans as $gameBean) {
+            
+        }
+    }
 }

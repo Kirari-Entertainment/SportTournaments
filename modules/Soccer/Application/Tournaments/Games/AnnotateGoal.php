@@ -1,7 +1,9 @@
 <?php namespace App\Soccer\Application\Tournaments\Games;
 
 use App\Soccer\Domain\Game\GameStatus;
+use App\Soccer\Domain\Game\Goal;
 use App\Soccer\Domain\RecordsBook;
+use DateTime;
 use Robust\Boilerplate\UseCase\InteractorWithUtils;
 
 readonly class AnnotateGoal extends InteractorWithUtils {
@@ -11,34 +13,31 @@ readonly class AnnotateGoal extends InteractorWithUtils {
 
     public function execute(
         string $gameId,
-        string $teamSide,
+        string $teamId,
         string $playerId
     ) : true {
         static::preventEmptyStringParams(
             $gameId,
-            $teamSide,
+            $teamId,
             $playerId
         );
 
         $game = $this->recordsBook->findGame($gameId) ?? static::throwEntityNotFound('Game');
+        $team = $this->recordsBook->findTeam($teamId) ?? static::throwEntityNotFound('Team');
         $player = $this->recordsBook->findPlayer($playerId) ?? static::throwEntityNotFound('Player');
-
-        if ($teamSide !== 'A' && $teamSide !== 'B') {
-            static::throwInvalidParameter('Team side must be A or B');
-        }
 
         if ($game->getStatus() !== GameStatus::IN_PROGRESS) {
             static::throwInvalidParameter('Game has not started yet');
         }
 
-        if ($teamSide === 'A') {
+        $goal = new Goal(
+            $gameId,
+            $teamId,
+            $playerId,
+            new DateTime()
+        );
 
-            $game->annotateGoalForTeamA($player);
-        } else {
-            $game->annotateGoalForTeamB($player);
-        }
-
-        $this->recordsBook->updateGame($game);
+        $this->recordsBook->annotateGoal($goal);
 
         return true;
     }

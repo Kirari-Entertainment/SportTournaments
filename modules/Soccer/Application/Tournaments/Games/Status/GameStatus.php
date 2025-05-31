@@ -10,7 +10,7 @@ class GameStatus {
         public string $contenantBId,
         public string $contenantAName,
         public string $contenantBName,
-        public string $contenantAScore,
-        public string $contenantBScore
+        public int $contenantAScore,
+        public int $contenantBScore
     ) { }
 }

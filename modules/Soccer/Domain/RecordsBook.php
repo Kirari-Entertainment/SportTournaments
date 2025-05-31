@@ -2,6 +2,7 @@
 
 use App\Soccer\Domain\Game\Game;
 use App\Soccer\Domain\Game\GameStatus;
+use App\Soccer\Domain\Game\Goal;
 use App\Soccer\Domain\Player\Player;
 use App\Soccer\Domain\Team\Team;
 use App\Soccer\Domain\Tournament\TeamMembership;
@@ -41,4 +42,11 @@ interface RecordsBook {
     public function updateGame(Game $game) : void;
     public function deleteGame(string $id) : void;
     public function retrieveGamesByTournamentAndStatus(string $tournamentId, GameStatus $status): array;
+
+    public function annotateGoal(Goal $goal) : void;
+    public function retrieveAllGoals() : array;
+    public function retrieveAllGoalsByGame(string $gameId);
+    public function retrieveAllGoalsByPlayer(string $playerId);
+    public function retrieveAllGoalsInTournament(string $tournamentId);
+    public function retrieveAllGoalsByPlayerInTournament(string $playerId, string $tournamentId);
 }
